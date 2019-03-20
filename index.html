@@ -30,6 +30,9 @@
 		<div class="header card-header">
 			<h3><p id="teaNameDiv"></p></h3>
 			<p>Infusion <span id="infusionNumSpan">1</span></p>
+			<div class="progress">
+				<div class="progress-bar" id="progressbar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+			</div>
 		</div>
 		<span id="timeDisplay" class="display-1">15:00</span>
 		<p class="startButtonP"><button id="startButton" class="btn btn-success">Start</button></p>
@@ -140,6 +143,14 @@ var teaTypes = [
 		amount: 5,
 		rinse: true,
 	},
+	{
+		name: "Sheng PuErh",
+		firstInfusion: 40,
+		nextInfusion: +20,
+		infusions: 10,
+		amount: 8,
+		rinse: false,
+	},
 ];
 
 function GetSetting(setting, defaultValue) {
@@ -212,6 +223,12 @@ function UpdateTea() {
 function StartTea() {
 	timeLeft = new Date((curSession.tea.firstInfusion + (curSession.tea.nextInfusion * curSession.infusionNum)) * 1000);
 	infusionNumSpan.innerText = curSession.infusionNum + 1;
+
+	var progress = (curSession.infusionNum / curSession.tea.infusions) * 100;
+
+	progressbar.setAttribute("style","width: " + progress + "%;");
+	progressbar.setAttribute("aria-valuenow",progress);
+
 	UpdateTimerDisplay();
 	startButton.innerText = "Start";
 	startButton.className = 'btn btn-success';
