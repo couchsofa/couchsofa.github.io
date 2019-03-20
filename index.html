@@ -28,6 +28,9 @@
 
 	<div id="timerUI" class="card mt-3 text-center" hidden>
 		<div class="header card-header">
+			<button type="button" class="close">
+				<span aria-hidden="true">&times;</span>
+			</button>
 			<h3><p id="teaNameDiv"></p></h3>
 			<p>Infusion <span id="infusionNumSpan">1</span></p>
 			<div class="progress">
@@ -35,7 +38,7 @@
 			</div>
 		</div>
 		<span id="timeDisplay" class="display-1">15:00</span>
-		<p class="startButtonP"><button id="startButton" class="btn btn-success">Start</button></p>
+		<p class="startButtonP"><button id="startButton" class="btn btn-success btn-lg" style="width: 75%; height: 5rem; margin: 1rem;">Start</button></p>
 		<p id="infusionSwitcherDiv">
 			<button id="prevInfusionButton" class="btn btn-secondary">Previous</button>
 			<button id="nextInfusionButton" class="btn btn-secondary">Skip</button>
@@ -217,7 +220,7 @@ function UpdateTea() {
 	newSessionButton.hidden = false;
 	if (sessionSwitcherDiv.hidden == true)
 		sessionSwitcherDiv.hidden = false;
-	teaNameDiv.innerText = curSession.tea.name + ' (' + curSession.tea.firstInfusion + '/' + curSession.tea.nextInfusion + ') ' + curSession.tea.amount.toString().replace(',',' - ') + 'g';
+	teaNameDiv.innerText = curSession.tea.name + "\n (" + curSession.tea.firstInfusion + '/' + curSession.tea.nextInfusion + ') ' + curSession.tea.amount.toString().replace(',',' - ') + 'g';
 }
 
 function StartTea() {
@@ -231,7 +234,7 @@ function StartTea() {
 
 	UpdateTimerDisplay();
 	startButton.innerText = "Start";
-	startButton.className = 'btn btn-success';
+	startButton.className = 'btn btn-success btn-lg';
 	if (curSession.infusionNum == 0)
 		prevInfusionButton.style.visibility = 'hidden';
 	else
@@ -340,7 +343,7 @@ startButton.onclick = function() {
 		lastTime = new Date();
 		timerInterval = window.setInterval(TimerTick, 10);
 		startButton.innerText = "Stop";
-		startButton.className = 'btn btn-danger stop';
+		startButton.className = 'btn btn-danger btn-lg stop';
 		infusionSwitcherDiv.hidden = true;
 		sessionSwitcherDiv.hidden = true;
 	} else {
@@ -376,11 +379,15 @@ for (var i in teaTypes) {
 		var tea = teaTypes[i];
 		var teaList = document.getElementById("teaList");
 		var button = document.createElement('button');
-		button.setAttribute("class","btn btn-primary");
+		var name = document.createElement('h3');
+		var info = document.createElement('div');
+		button.setAttribute("class","btn btn-primary mt-1");
 		button.setAttribute("type","button");
 
-		button.innerText = tea.name + ' (' + tea.firstInfusion + '/' + tea.nextInfusion + ') ' + tea.amount.toString().replace(',',' - ') + 'g';
-
+		name.innerText = tea.name
+		info.innerText = "(" + tea.firstInfusion + '/' + tea.nextInfusion + ') ' + tea.amount.toString().replace(',',' - ') + 'g';
+		button.appendChild(name);
+		button.appendChild(info);
 		button.onclick = function() {
 			SelectTea(tea, i);
 		};
@@ -424,6 +431,10 @@ request.onsuccess = function(event) {
 		}
 	};
 };
+
+$('.close').on('click',function() {
+	// Close Session
+})
 
 setInterval(function(){
     document.getElementById("startButton").focus();
