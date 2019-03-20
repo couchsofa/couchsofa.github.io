@@ -16,28 +16,43 @@
 </head>
 <body>
 
-<div id="teaSelection" hidden>
-	<h1>Select tea</h1>
-</div>
+<div class="container">
 
-<div id="timerUI" hidden>
-	<div class="header">
-		<p id="teaNameDiv"></p>
-		<p>Infusion <span id="infusionNumSpan">1</span></p>
+	<div id="teaSelection" class="card mt-3" hidden>
+		<div class="card-header text-center">
+			<h3>🍵</h3>
+		</div>
+		<div id="teaList" class="btn-group-vertical">
+		</div>
 	</div>
-	<span id="timeDisplay">15:00</span>
-	<p class="startButtonP"><button id="startButton">Start</button></p>
-	<p id="infusionSwitcherDiv">
-		<button id="prevInfusionButton">Previous</button>
-		<button id="nextInfusionButton">Skip</button>
-	</p>
+
+	<div id="timerUI" class="card mt-3 text-center" hidden>
+		<div class="header card-header">
+			<h3><p id="teaNameDiv"></p></h3>
+			<p>Infusion <span id="infusionNumSpan">1</span></p>
+		</div>
+		<span id="timeDisplay" class="display-1">15:00</span>
+		<p class="startButtonP"><button id="startButton" class="btn btn-success">Start</button></p>
+		<p id="infusionSwitcherDiv">
+			<button id="prevInfusionButton" class="btn btn-secondary">Previous</button>
+			<button id="nextInfusionButton" class="btn btn-secondary">Skip</button>
+		</p>
+	</div>
+
+	<div class="navbar fixed-bottom justify-content-center">
+		<div class="btn-toolbar">
+			<div id="sessionSwitcherDiv" hidden>
+				<div id="sessionsDiv" class="btn-group" role="group"></div>
+			</div>
+			<div class="btn-group">
+				<button id="newSessionButton" class="btn btn-success">+</button>
+			</div>
+		</div>
+	</div>
+	
+
 </div>
 
-<div id="sessionSwitcherDiv" hidden>
-	<span id="sessionsDiv"></span>
-
-	<button id="newSessionButton">+</button>
-</div>
 
 <script>
 'use strict';
@@ -126,6 +141,7 @@ var teaTypes = [
 		rinse: true,
 	},
 ];
+
 function GetSetting(setting, defaultValue) {
 		var value = localStorage.getItem(APP_NAME + setting);
 		if (value === null) {
@@ -143,12 +159,14 @@ function PadZero(number) {
 	else
 		return number;
 }
+
 function StopTimer() {
 	window.clearInterval(timerInterval);
 	timerInterval = null;
 	sessionSwitcherDiv.hidden = false;
 	infusionSwitcherDiv.hidden = false;
 }
+
 function TimerTick() {
 	var now = new Date();
 	var elapsed = new Date(now - lastTime);
@@ -164,6 +182,7 @@ function TimerTick() {
 		NextInfusion();
 	}
 }
+
 function DBUpdateTea() {
 	var dbObj = {
 		iTea: curSession.iTea,
@@ -171,6 +190,7 @@ function DBUpdateTea() {
 	};
 	db.transaction(['sessions'], 'readwrite').objectStore('sessions').put(dbObj, curSession.iDB);
 }
+
 function SelectTea(tea, i) {
 	curSession.infusionNum = 0;
 	curSession.tea = tea;
@@ -178,6 +198,7 @@ function SelectTea(tea, i) {
 	UpdateTea();
 	DBUpdateTea();
 }
+
 function UpdateTea() {
 	timerUI.hidden = false;
 	teaSelection.hidden = true;
@@ -185,30 +206,38 @@ function UpdateTea() {
 	newSessionButton.hidden = false;
 	if (sessionSwitcherDiv.hidden == true)
 		sessionSwitcherDiv.hidden = false;
-	teaNameDiv.innerText = curSession.tea.name;
+	teaNameDiv.innerText = curSession.tea.name + ' (' + curSession.tea.firstInfusion + '/' + curSession.tea.nextInfusion + ') ' + curSession.tea.amount.toString().replace(',',' - ') + 'g';
 }
+
 function StartTea() {
 	timeLeft = new Date((curSession.tea.firstInfusion + (curSession.tea.nextInfusion * curSession.infusionNum)) * 1000);
 	infusionNumSpan.innerText = curSession.infusionNum + 1;
 	UpdateTimerDisplay();
 	startButton.innerText = "Start";
-	startButton.className = '';
+	startButton.className = 'btn btn-success';
 	if (curSession.infusionNum == 0)
 		prevInfusionButton.style.visibility = 'hidden';
 	else
 		prevInfusionButton.style.visibility = 'visible';
 }
+
 function UpdateTimerDisplay() {
 	var t = PadZero(timeLeft.getSeconds()) + "," + PadZero(Math.floor(timeLeft.getMilliseconds() / 10));
 	if (timeLeft.getMinutes() > 0)
 		t = timeLeft.getMinutes() + ":" + t;
 	timeDisplay.innerText = t;
 }
+
 function NextInfusion() {
 	curSession.infusionNum++;
 	StartTea();
 	DBUpdateTea();
 }
+
+
+//	Session
+
+
 function SwitchSessionTo(i) {
 	curSession = sessions[i];
 	if (curSession.tea == null) {
@@ -219,14 +248,20 @@ function SwitchSessionTo(i) {
 	}
 	for (var j = 0; j < sessionsDiv.children.length; j++) {
 		if (j != i)
-			sessionsDiv.children[j].className = '';
+			sessionsDiv.children[j].setAttribute("class",sessionsDiv.children[j].getAttribute("class").split(" active").join(""));
 	}
-	sessionsDiv.children[i].className = 'active';
+	if (!sessionsDiv.children[i].getAttribute("class").includes(" active")) {
+		sessionsDiv.children[i].setAttribute("class",sessionsDiv.children[i].getAttribute("class") + " active");
+	}
 	SetSetting('session', i);
 }
+
 function AddSession(newSession) {
 	sessions.push(newSession);
+
 	var newEl = document.createElement('button');
+	newEl.setAttribute("class","btn btn-secondary");
+	newEl.setAttribute("type","button");
 	newEl.innerText = sessions.length;
 	(function(i) {
 	newEl.onclick = function() {
@@ -239,6 +274,7 @@ function AddSession(newSession) {
 	sessionsDiv.appendChild(newEl);
 	return newEl;
 }
+
 function NewSession() {
 	if (sessions.length == 1) {
 		sessionsDiv.children[sessionsDiv.children.length - 1].hidden = false;
@@ -254,10 +290,11 @@ function NewSession() {
 	ShowSelectTea();
 	newSessionButton.hidden = true;
 	for (var j = 0; j < sessionsDiv.children.length; j++) {
-		sessionsDiv.children[j].className = '';
+		sessionsDiv.children[j].setAttribute("class",sessionsDiv.children[j].getAttribute("class").split(" active").join(""));
 	}
 	var newEl = AddSession(newSession);
-	newEl.className = 'active';
+	newEl.setAttribute("class","btn btn-secondary active");
+	newEl.setAttribute("type","button");
 	if (sessions.length == 1)
 		newEl.hidden = true;
 	var dbObj = {
@@ -268,10 +305,16 @@ function NewSession() {
 		newSession.iDB = event.target.result;
 	};
 }
+
+
+//	Nav Elements
+
+
 function ShowSelectTea() {
 	timerUI.hidden = true;
 	teaSelection.hidden = false;
 }
+
 startButton.onclick = function() {
 	if (timerInterval == null) {
 		beep1.load();
@@ -280,7 +323,7 @@ startButton.onclick = function() {
 		lastTime = new Date();
 		timerInterval = window.setInterval(TimerTick, 10);
 		startButton.innerText = "Stop";
-		startButton.className = 'stop';
+		startButton.className = 'btn btn-danger stop';
 		infusionSwitcherDiv.hidden = true;
 		sessionSwitcherDiv.hidden = true;
 	} else {
@@ -288,6 +331,7 @@ startButton.onclick = function() {
 		StartTea();
 	}
 }
+
 prevInfusionButton.onclick = function() {
 	if (curSession.infusionNum > 0) {
 		curSession.infusionNum--;
@@ -295,28 +339,38 @@ prevInfusionButton.onclick = function() {
 		DBUpdateTea();
 	}
 }
+
 teaNameDiv.onclick = function() {
 	if (timerInterval == null) {
 		ShowSelectTea();
 		document.scrollingElement.scrollTop = 0;
 	}
 }
+
 newSessionButton.onclick = function() {
 	NewSession();
 	document.scrollingElement.scrollTop = 0;
 };
+
 nextInfusionButton.onclick = NextInfusion;
+
 for (var i in teaTypes) {
 	(function(i) {
 		var tea = teaTypes[i];
-		var newEl = document.createElement('button');
-		newEl.innerText = tea.name;
-		newEl.onclick = function() {
+		var teaList = document.getElementById("teaList");
+		var button = document.createElement('button');
+		button.setAttribute("class","btn btn-primary");
+		button.setAttribute("type","button");
+
+		button.innerText = tea.name + ' (' + tea.firstInfusion + '/' + tea.nextInfusion + ') ' + tea.amount.toString().replace(',',' - ') + 'g';
+
+		button.onclick = function() {
 			SelectTea(tea, i);
 		};
-		teaSelection.appendChild(newEl);
+		teaList.appendChild(button);
 	})(i);
 }
+
 request.onupgradeneeded = function(event) {
 	var db = event.target.result;
     db.onerror = function(event) {
@@ -324,6 +378,7 @@ request.onupgradeneeded = function(event) {
     };
 	var objectStore = db.createObjectStore('sessions', { autoIncrement: true });
 }
+
 request.onsuccess = function(event) {
 	db = request.result;
 	var o = db.transaction(['sessions'], 'readonly').objectStore('sessions');
@@ -352,6 +407,14 @@ request.onsuccess = function(event) {
 		}
 	};
 };
+
+setInterval(function(){
+    document.getElementById("startButton").focus();
+}, 10000);
 </script>
 </body>
 </html>
+
+
+
+
