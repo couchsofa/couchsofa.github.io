@@ -1,1 +1,357 @@
-Hello World
+<!DOCTYPE html>
+<html lang="en" manifest="ac.appcache">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Gongfu Tea Timer</title>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-title" content="Tea Timer" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	
+	<link rel="stylesheet" href="css/bootstrap.min.css" />
+	<script src="js/jquery-3.3.1.slim.min.js" />
+	<script src="js/popper.min.js" />
+	<script src="js/bootstrap.min.js" />
+</head>
+<body>
+
+<div id="teaSelection" hidden>
+	<h1>Select tea</h1>
+</div>
+
+<div id="timerUI" hidden>
+	<div class="header">
+		<p id="teaNameDiv"></p>
+		<p>Infusion <span id="infusionNumSpan">1</span></p>
+	</div>
+	<span id="timeDisplay">15:00</span>
+	<p class="startButtonP"><button id="startButton">Start</button></p>
+	<p id="infusionSwitcherDiv">
+		<button id="prevInfusionButton">Previous</button>
+		<button id="nextInfusionButton">Skip</button>
+	</p>
+</div>
+
+<div id="sessionSwitcherDiv" hidden>
+	<span id="sessionsDiv"></span>
+
+	<button id="newSessionButton">+</button>
+</div>
+
+<script>
+'use strict';
+const APP_NAME = 'GongfuTeaTimer';
+var lastTime;
+var timeLeft;
+var timerInterval = null;
+var alerted = false;
+var beep1 = new Audio('audio/beep.mp3');
+var beep2 = new Audio('audio/done.mp3');
+var sessions = new Array();
+var curSession = null;
+var db;
+var request = window.indexedDB.open(APP_NAME, 1);
+var teaTypes = [
+	{
+		name: "Green",
+		firstInfusion: 15,
+		nextInfusion: +3,
+		infusions: 5,
+		amount: [3, 3.5],
+		rinse: false,
+	},
+	{
+		name: "Black (small leaf)",
+		firstInfusion: 10,
+		nextInfusion: +5,
+		infusions: 8,
+		amount: 4.5,
+		rinse: true,
+	},
+	{
+		name: "Black (large leaf)",
+		firstInfusion: 15,
+		nextInfusion: +5,
+		infusions: 8,
+		amount: 4,
+		rinse: true,
+	},
+	{
+		name: "White",
+		firstInfusion: 20,
+		nextInfusion: +5,
+		infusions: 5,
+		amount: [3.5, 4],
+		rinse: false,
+	},
+	{
+		name: "Yellow",
+		firstInfusion: 15,
+		nextInfusion: +5,
+		infusions: 5,
+		amount: [3.5, 4],
+		rinse: false,
+	},
+	{
+		name: "Oolong (strip)",
+		firstInfusion: 20,
+		nextInfusion: +5,
+		infusions: 9,
+		amount: [4.5, 5],
+		rinse: true,
+	},
+	{
+		name: "Oolong (ball)",
+		firstInfusion: 25,
+		nextInfusion: +5,
+		infusions: 9,
+		amount: [6, 6.5],
+		rinse: true,
+	},
+	{
+		name: "PuErh (raw)",
+		firstInfusion: 10,
+		nextInfusion: +3,
+		infusions: 15,
+		amount: 5,
+		rinse: true,
+	},
+	{
+		name: "PuErh (ripe)",
+		firstInfusion: 10,
+		nextInfusion: +5,
+		infusions: 20,
+		amount: 5,
+		rinse: true,
+	},
+];
+function GetSetting(setting, defaultValue) {
+		var value = localStorage.getItem(APP_NAME + setting);
+		if (value === null) {
+			return defaultValue;
+		} else {
+			return value;
+		}
+	}
+	function SetSetting(setting, value) {
+		localStorage.setItem(APP_NAME + setting, value);
+	}
+function PadZero(number) {
+	if (number < 10)
+		return '0' + number;
+	else
+		return number;
+}
+function StopTimer() {
+	window.clearInterval(timerInterval);
+	timerInterval = null;
+	sessionSwitcherDiv.hidden = false;
+	infusionSwitcherDiv.hidden = false;
+}
+function TimerTick() {
+	var now = new Date();
+	var elapsed = new Date(now - lastTime);
+	lastTime = now;
+	timeLeft = new Date(timeLeft - elapsed);
+	UpdateTimerDisplay();
+	if (alerted == false && timeLeft <= 5000) {
+		beep1.play();
+		alerted = true;
+	} else if (timeLeft <= 0) {
+		beep2.play();
+		StopTimer();
+		NextInfusion();
+	}
+}
+function DBUpdateTea() {
+	var dbObj = {
+		iTea: curSession.iTea,
+		infusionNum: curSession.infusionNum,
+	};
+	db.transaction(['sessions'], 'readwrite').objectStore('sessions').put(dbObj, curSession.iDB);
+}
+function SelectTea(tea, i) {
+	curSession.infusionNum = 0;
+	curSession.tea = tea;
+	curSession.iTea = i;
+	UpdateTea();
+	DBUpdateTea();
+}
+function UpdateTea() {
+	timerUI.hidden = false;
+	teaSelection.hidden = true;
+	StartTea();
+	newSessionButton.hidden = false;
+	if (sessionSwitcherDiv.hidden == true)
+		sessionSwitcherDiv.hidden = false;
+	teaNameDiv.innerText = curSession.tea.name;
+}
+function StartTea() {
+	timeLeft = new Date((curSession.tea.firstInfusion + (curSession.tea.nextInfusion * curSession.infusionNum)) * 1000);
+	infusionNumSpan.innerText = curSession.infusionNum + 1;
+	UpdateTimerDisplay();
+	startButton.innerText = "Start";
+	startButton.className = '';
+	if (curSession.infusionNum == 0)
+		prevInfusionButton.style.visibility = 'hidden';
+	else
+		prevInfusionButton.style.visibility = 'visible';
+}
+function UpdateTimerDisplay() {
+	var t = PadZero(timeLeft.getSeconds()) + "," + PadZero(Math.floor(timeLeft.getMilliseconds() / 10));
+	if (timeLeft.getMinutes() > 0)
+		t = timeLeft.getMinutes() + ":" + t;
+	timeDisplay.innerText = t;
+}
+function NextInfusion() {
+	curSession.infusionNum++;
+	StartTea();
+	DBUpdateTea();
+}
+function SwitchSessionTo(i) {
+	curSession = sessions[i];
+	if (curSession.tea == null) {
+		ShowSelectTea();
+		newSessionButton.hidden = false;
+	} else {
+		UpdateTea();
+	}
+	for (var j = 0; j < sessionsDiv.children.length; j++) {
+		if (j != i)
+			sessionsDiv.children[j].className = '';
+	}
+	sessionsDiv.children[i].className = 'active';
+	SetSetting('session', i);
+}
+function AddSession(newSession) {
+	sessions.push(newSession);
+	var newEl = document.createElement('button');
+	newEl.innerText = sessions.length;
+	(function(i) {
+	newEl.onclick = function() {
+		if (timerInterval == null) {
+			SwitchSessionTo(i);
+		}
+	};
+	})(sessions.length - 1);
+	
+	sessionsDiv.appendChild(newEl);
+	return newEl;
+}
+function NewSession() {
+	if (sessions.length == 1) {
+		sessionsDiv.children[sessionsDiv.children.length - 1].hidden = false;
+	} else if (sessions.length == 0) {
+		sessionSwitcherDiv.hidden = true;
+	}
+	var newSession = {
+		tea: null,
+		iTea: -1,
+		infusionNum: 0,
+	}
+	curSession = newSession;
+	ShowSelectTea();
+	newSessionButton.hidden = true;
+	for (var j = 0; j < sessionsDiv.children.length; j++) {
+		sessionsDiv.children[j].className = '';
+	}
+	var newEl = AddSession(newSession);
+	newEl.className = 'active';
+	if (sessions.length == 1)
+		newEl.hidden = true;
+	var dbObj = {
+		iTea: -1,
+		infusionNum: 0,
+	};
+	db.transaction(['sessions'], 'readwrite').objectStore('sessions').add(dbObj).onsuccess = function(event) {
+		newSession.iDB = event.target.result;
+	};
+}
+function ShowSelectTea() {
+	timerUI.hidden = true;
+	teaSelection.hidden = false;
+}
+startButton.onclick = function() {
+	if (timerInterval == null) {
+		beep1.load();
+		beep2.load();
+		alerted = false;
+		lastTime = new Date();
+		timerInterval = window.setInterval(TimerTick, 10);
+		startButton.innerText = "Stop";
+		startButton.className = 'stop';
+		infusionSwitcherDiv.hidden = true;
+		sessionSwitcherDiv.hidden = true;
+	} else {
+		StopTimer();
+		StartTea();
+	}
+}
+prevInfusionButton.onclick = function() {
+	if (curSession.infusionNum > 0) {
+		curSession.infusionNum--;
+		StartTea();
+		DBUpdateTea();
+	}
+}
+teaNameDiv.onclick = function() {
+	if (timerInterval == null) {
+		ShowSelectTea();
+		document.scrollingElement.scrollTop = 0;
+	}
+}
+newSessionButton.onclick = function() {
+	NewSession();
+	document.scrollingElement.scrollTop = 0;
+};
+nextInfusionButton.onclick = NextInfusion;
+for (var i in teaTypes) {
+	(function(i) {
+		var tea = teaTypes[i];
+		var newEl = document.createElement('button');
+		newEl.innerText = tea.name;
+		newEl.onclick = function() {
+			SelectTea(tea, i);
+		};
+		teaSelection.appendChild(newEl);
+	})(i);
+}
+request.onupgradeneeded = function(event) {
+	var db = event.target.result;
+    db.onerror = function(event) {
+		console.log(event);
+    };
+	var objectStore = db.createObjectStore('sessions', { autoIncrement: true });
+}
+request.onsuccess = function(event) {
+	db = request.result;
+	var o = db.transaction(['sessions'], 'readonly').objectStore('sessions');
+	o.openCursor().onsuccess = function(event) {
+		var cursor = event.target.result;
+		if (cursor) {
+			var newSession = cursor.value;
+			newSession.iDB = cursor.key;
+			if (newSession.iTea == -1)
+				newSession.tea = null;
+			else
+				newSession.tea = teaTypes[newSession.iTea];
+			
+			AddSession(newSession);
+			cursor.continue();
+		} else {
+			if (sessions.length == 0) {
+				NewSession();
+			} else {
+				if (sessions.length == 1)
+					sessionsDiv.children[0].hidden = true;
+				else
+					sessionSwitcherDiv.hidden = false;
+				SwitchSessionTo(GetSetting('session', 0));
+			}
+		}
+	};
+};
+</script>
+</body>
+</html>
