@@ -18,7 +18,7 @@
 
 <div class="container">
 
-	<div id="teaSelection" class="card mt-3" hidden>
+	<div id="teaSelection" class="card mt-3 mb-5" hidden>
 		<div class="card-header text-center">
 			<h3>🍵</h3>
 		</div>
@@ -157,16 +157,16 @@ var teaTypes = [
 ];
 
 function GetSetting(setting, defaultValue) {
-		var value = localStorage.getItem(APP_NAME + setting);
-		if (value === null) {
-			return defaultValue;
-		} else {
-			return value;
-		}
+	var value = localStorage.getItem(APP_NAME + setting);
+	if (value === null) {
+		return defaultValue;
+	} else {
+		return value;
 	}
-	function SetSetting(setting, value) {
-		localStorage.setItem(APP_NAME + setting, value);
-	}
+}
+function SetSetting(setting, value) {
+	localStorage.setItem(APP_NAME + setting, value);
+}
 function PadZero(number) {
 	if (number < 10)
 		return '0' + number;
@@ -281,6 +281,7 @@ function AddSession(newSession) {
 
 	var newEl = document.createElement('button');
 	newEl.setAttribute("class","btn btn-secondary");
+	newEl.setAttribute("id",(sessions.length - 1));
 	newEl.setAttribute("type","button");
 	newEl.innerText = sessions.length;
 	(function(i) {
@@ -324,6 +325,20 @@ function NewSession() {
 	db.transaction(['sessions'], 'readwrite').objectStore('sessions').add(dbObj).onsuccess = function(event) {
 		newSession.iDB = event.target.result;
 	};
+}
+
+function CloseSession(i) {
+	if (i == 0) {
+		ShowSelectTea();
+		document.scrollingElement.scrollTop = 0;
+	} else {
+		SwitchSessionTo(i-1);
+		db.transaction(['sessions'], 'readwrite').objectStore('sessions').delete(sessions[i].iDB).onsuccess = function(event) {
+			var sessionsDiv = document.getElementById('sessionsDiv');
+			var sessionButton = document.getElementById(i);
+			sessionsDiv.removeChild(sessionButton);
+    	};
+	}
 }
 
 
@@ -433,7 +448,7 @@ request.onsuccess = function(event) {
 };
 
 $('.close').on('click',function() {
-	// Close Session
+	CloseSession(GetSetting('session', 0));
 })
 
 setInterval(function(){
