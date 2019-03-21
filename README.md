@@ -1,3 +1,5 @@
 # Advanced Gong Fu Timer
 
-Forked from: https://github.com/FutureMillennium/Gongfu-Tea-Timer
+With bootstrap, session progress, more teas and option to close sessions
+
+Based on: https://github.com/FutureMillennium/Gongfu-Tea-Timer
