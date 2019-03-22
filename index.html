@@ -29,11 +29,11 @@
 			</button>
 			<div class="collapse mx-auto" id="customTeaCard">
 				<div id="customTea" class="text-center mt-2 mb-2">
-					<form>
+					<form name="addTeaForm">
 						<input class="form-control form-control-lg text-center" required name="TeaName" type="text" placeholder="Name" id="TeaName" />
 
 						<div class="input-group">
-							<input placeholder="First [s]" required min="1" max="240" type="number" id="timerInput1" name="timerInput1" />
+							<input placeholder="First [s]" required min="10" max="240" type="number" id="timerInput1" name="timerInput1" />
 						</div>
 
 						<div class="input-group">
@@ -494,7 +494,7 @@ $('#addTea').on('click',function() {
 
 	var tea = {
 		name: $('#TeaName').val(),
-		firstInfusion: $("#timerInput1").val(),
+		firstInfusion: $("#timerInput1").val()/1,
 		nextInfusion: $("#timerInput2").val(),
 		infusions: $("#infusions").val(),
 		amount: $("#amount").val(),
