@@ -13,6 +13,7 @@
 	<script src="js/jquery-3.3.1.slim.min.js"></script>
 	<script src="js/popper.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
+	<script src="js/number-input.min.js"></script>
 </head>
 <body>
 
@@ -23,6 +24,34 @@
 			<h3>🍵</h3>
 		</div>
 		<div id="teaList" class="btn-group-vertical">
+			<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#customTeaCard" aria-expanded="false" aria-controls="customTeaCard">
+				Add a custom tea
+			</button>
+			<div class="collapse mx-auto" id="customTeaCard">
+				<div id="customTea" class="text-center mt-2 mb-2">
+					<form>
+						<input class="form-control form-control-lg text-center" required name="TeaName" type="text" placeholder="Name" id="TeaName" />
+
+						<div class="input-group">
+							<input placeholder="First [s]" required min="1" max="240" type="number" id="timerInput1" name="timerInput1" />
+						</div>
+
+						<div class="input-group">
+							<input placeholder="Next [s]" required min="1" max="240" type="number" id="timerInput2" name="timerInput2" />
+						</div>
+
+						<div class="input-group">
+							<input placeholder="Infusions" required min="1" max="50" type="number" id="infusions" name="infusions" />
+						</div>
+
+						<div class="input-group mb-3">
+							<input placeholder="Amount [g/100ml]" required min="1" max="50" type="number" id="amount" name="amount" />
+						</div>
+
+						<button class="btn btn-success mt-1 btn-block" type="submit" id="addTea">Add Tea</button>
+					</form>
+				</div>
+			</div>
 		</div>
 	</div>
 
@@ -80,7 +109,6 @@ var teaTypes = [
 		nextInfusion: +3,
 		infusions: 5,
 		amount: [3, 3.5],
-		rinse: false,
 	},
 	{
 		name: "Black (small leaf)",
@@ -88,7 +116,6 @@ var teaTypes = [
 		nextInfusion: +5,
 		infusions: 8,
 		amount: 4.5,
-		rinse: true,
 	},
 	{
 		name: "Black (large leaf)",
@@ -96,7 +123,6 @@ var teaTypes = [
 		nextInfusion: +5,
 		infusions: 8,
 		amount: 4,
-		rinse: true,
 	},
 	{
 		name: "White",
@@ -104,7 +130,6 @@ var teaTypes = [
 		nextInfusion: +5,
 		infusions: 5,
 		amount: [3.5, 4],
-		rinse: false,
 	},
 	{
 		name: "Yellow",
@@ -112,7 +137,6 @@ var teaTypes = [
 		nextInfusion: +5,
 		infusions: 5,
 		amount: [3.5, 4],
-		rinse: false,
 	},
 	{
 		name: "Oolong (strip)",
@@ -120,7 +144,6 @@ var teaTypes = [
 		nextInfusion: +5,
 		infusions: 9,
 		amount: [4.5, 5],
-		rinse: true,
 	},
 	{
 		name: "Oolong (ball)",
@@ -128,7 +151,6 @@ var teaTypes = [
 		nextInfusion: +5,
 		infusions: 9,
 		amount: [6, 6.5],
-		rinse: true,
 	},
 	{
 		name: "PuErh (raw)",
@@ -136,7 +158,6 @@ var teaTypes = [
 		nextInfusion: +3,
 		infusions: 15,
 		amount: 5,
-		rinse: true,
 	},
 	{
 		name: "PuErh (ripe)",
@@ -144,7 +165,6 @@ var teaTypes = [
 		nextInfusion: +5,
 		infusions: 20,
 		amount: 5,
-		rinse: true,
 	},
 	{
 		name: "Sheng PuErh",
@@ -152,9 +172,20 @@ var teaTypes = [
 		nextInfusion: +20,
 		infusions: 10,
 		amount: 8,
-		rinse: false,
 	},
 ];
+
+
+if (localStorage.getItem("Teas") === null) {
+	localStorage.setItem("Teas", JSON.stringify(teaTypes));	
+} else {
+	teaTypes = JSON.parse(localStorage.getItem("Teas"));
+};
+
+function UpdateTeaStore() {
+	localStorage.setItem("Teas", JSON.stringify(teaTypes));
+}
+
 
 function GetSetting(setting, defaultValue) {
 	var value = localStorage.getItem(APP_NAME + setting);
@@ -453,6 +484,53 @@ request.onsuccess = function(event) {
 	};
 };
 
+$('#addTea').on('click',function() {
+
+	if ($('#TeaName').val() === '') {return;};
+	if ($('#timerInput1').val() === '') {return;};
+	if ($('#timerInput2').val() === '') {return;};
+	if ($('#infusions').val() === '') {return;};
+	if ($('#amount').val() === '') {return;};
+
+	var tea = {
+		name: $('#TeaName').val(),
+		firstInfusion: $("#timerInput1").val(),
+		nextInfusion: $("#timerInput2").val(),
+		infusions: $("#infusions").val(),
+		amount: $("#amount").val(),
+	};
+
+	$('#TeaName').val('');
+	$('#timerInput1').val('');
+	$('#timerInput2').val('');
+	$('#infusions').val('');
+	$('#amount').val('');
+	$('#customTeaCard').collapse('toggle');
+
+	var length = teaTypes.push(tea);
+
+	var tea = teaTypes[length - 1];
+	var teaList = document.getElementById("teaList");
+	var button = document.createElement('button');
+	var name = document.createElement('h3');
+	var info = document.createElement('div');
+	button.setAttribute("class","btn btn-primary mt-1");
+	button.setAttribute("type","button");
+
+	name.innerText = tea.name
+	info.innerText = "(" + tea.firstInfusion + '/' + tea.nextInfusion + ') ' + tea.amount.toString().replace(',',' - ') + 'g';
+	button.appendChild(name);
+	button.appendChild(info);
+	button.onclick = function() {
+		SelectTea(tea, (length - 1));
+	};
+	teaList.appendChild(button);
+
+	UpdateTeaStore();
+
+	SelectTea(tea, (length - 1));
+})
+
 $('.close').on('click',function() {
 	CloseSession(GetSetting('session', 0));
 })
@@ -460,6 +538,11 @@ $('.close').on('click',function() {
 setInterval(function(){
     document.getElementById("startButton").focus();
 }, 10000);
+
+$("#timerInput1").inputSpinner();
+$("#timerInput2").inputSpinner();
+$("#infusions").inputSpinner();
+$("#amount").inputSpinner();
 </script>
 </body>
 </html>
