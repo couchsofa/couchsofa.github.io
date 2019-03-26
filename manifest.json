@@ -1,0 +1,8 @@
+{
+  "short_name": "Gong Fu Tea Timer",
+  "name": "Gong Fu Tea Timer",
+  ],
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait"
+}
