@@ -540,17 +540,8 @@ setInterval(function(){
     document.getElementById("startButton").focus();
 }, 10000);
 
-async function WakeLock() {
-	var wakeLockObj;
-	if ('getWakeLock' in navigator) {
-	  try {
-	    // Create a wake lock for the type we want.
-	    wakeLockObj = await navigator.getWakeLock('screen');
-	    console.log('👍', 'getWakeLock', wakeLockObj);
-	  } catch (ex) {
-	    console.error('👎', 'getWakeLock', err);
-	  }
-	}
+function WakeLock() {
+	window.navigator.requestWakeLock('screen');
 }
 WakeLock();
 
