@@ -539,17 +539,7 @@ $('.close').on('click',function() {
 setInterval(function(){
     document.getElementById("startButton").focus();
 }, 10000);
-	
-async function tryKeepScreenAlive() {
-  const lock = new WakeLock("screen");
 
-  const controller = new AbortController();
-  const signal = controller.signal;
-
-  lock.request({ signal });
-}
-
-tryKeepScreenAlive();
 
 $("#timerInput1").inputSpinner();
 $("#timerInput2").inputSpinner();
