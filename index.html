@@ -190,6 +190,35 @@ document.addEventListener('click', function enableNoSleep() {
 	}, false);
 }
 
+function flash(){
+	var bgcolor = window.getComputedStyle(document.body, null).getPropertyValue('background-color');
+	document.body.style.backgroundColor = 'red';
+	setTimeout(function(){
+		document.body.style.backgroundColor = bgcolor;
+	},100);
+	setTimeout(function(){
+		document.body.style.backgroundColor = 'red';
+	},200);
+	setTimeout(function(){
+		document.body.style.backgroundColor = bgcolor;
+	},300);
+	setTimeout(function(){
+		document.body.style.backgroundColor = 'red';
+	},400);
+	setTimeout(function(){
+		document.body.style.backgroundColor = bgcolor;
+	},500);
+}
+
+function flashOnce(){
+	var bgcolor = window.getComputedStyle(document.body, null).getPropertyValue('background-color');
+	document.body.style.backgroundColor = 'red';
+	setTimeout(function(){
+		document.body.style.backgroundColor = bgcolor;
+	},100);
+}
+
+
 
 if (localStorage.getItem("Teas") === null) {
 	localStorage.setItem("Teas", JSON.stringify(teaTypes));	
@@ -238,9 +267,11 @@ function TimerTick() {
 	UpdateTimerDisplay();
 	if (alerted == false && timeLeft <= 5000) {
 		beep1.play();
+		flashOnce();
 		alerted = true;
 	} else if (timeLeft <= 0) {
 		beep2.play();
+		flash();
 		StopTimer();
 		NextInfusion();
 	}
