@@ -1,12 +1,12 @@
 {
   "short_name": "Gong Fu Tea Timer",
   "name": "Gong Fu Tea Timer",
-  "start_url": "/index.html",
+  "start_url": "index.html",
   "display": "standalone",
   "orientation": "portrait",
   "icons": [
         {
-            "src": "/img/android-chrome-192x192.png",
+            "src": "img/android-chrome-192x192.png",
             "sizes": "192x192",
             "type": "image/png"
         }

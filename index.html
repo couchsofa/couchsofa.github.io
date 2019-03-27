@@ -9,17 +9,18 @@
 	<meta name="apple-mobile-web-app-title" content="Tea Timer" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 	
-	<link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
-	<link rel="mask-icon" href="/img/safari-pinned-tab.svg" color="#5bbad5">
+	<link rel="apple-touch-icon" sizes="180x180" href="/mg/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+	<link rel="mask-icon" href="img/safari-pinned-tab.svg" color="#5bbad5">
 	
-	<link rel="manifest" href="/manifest.json">
+	<link rel="manifest" href="manifest.json">
 	<link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
 	<script src="js/jquery-3.3.1.slim.min.js"></script>
 	<script src="js/popper.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
 	<script src="js/number-input.min.js"></script>
+	<script src="js/NoSleep.min.js"></script>
 </head>
 <body>
 
@@ -104,6 +105,7 @@ var timerInterval = null;
 var alerted = false;
 var beep1 = new Audio('audio/beep.mp3');
 var beep2 = new Audio('audio/done.mp3');
+var noSleep = new NoSleep();
 var sessions = new Array();
 var curSession = null;
 var db;
@@ -181,6 +183,13 @@ var teaTypes = [
 	},
 ];
 
+function PreventSleep(){
+document.addEventListener('click', function enableNoSleep() {
+	document.removeEventListener('click', enableNoSleep, false);
+		noSleep.enable();
+	}, false);
+}
+
 
 if (localStorage.getItem("Teas") === null) {
 	localStorage.setItem("Teas", JSON.stringify(teaTypes));	
@@ -218,6 +227,7 @@ function StopTimer() {
 	timerInterval = null;
 	sessionSwitcherDiv.hidden = false;
 	infusionSwitcherDiv.hidden = false;
+	noSleep.disable();
 }
 
 function TimerTick() {
@@ -404,6 +414,7 @@ startButton.onclick = function() {
 		startButton.className = 'btn btn-danger btn-lg stop';
 		infusionSwitcherDiv.hidden = true;
 		sessionSwitcherDiv.hidden = true;
+		PreventSleep();
 	} else {
 		StopTimer();
 		StartTea();
