@@ -74,6 +74,10 @@
 					<img id="vibrate" src="img/vibrate-false.svg" width="20" height="20" >
 				</button>
 
+				<button type="button" class="btn btn-secondary" id="prevent-sleep-button">
+					<img id="prevent-sleep" src="img/prevent-sleep-false.svg" width="20" height="20" >
+				</button>
+
 				<button type="button" class="btn btn-secondary" id="close">
 					<img src="img/close.svg" width="15" height="15" >
 				</button>	
@@ -118,6 +122,7 @@ var lastTime;
 var timeLeft;
 var muted;
 var vibrate;
+var prevent_sleep;
 var timerInterval = null;
 var alerted = false;
 var beep1 = new Audio('audio/beep.mp3');
@@ -244,6 +249,7 @@ function vibrateOnce(){
 	navigator.vibrate([100]);
 }
 
+//	tea persist
 
 if (localStorage.getItem("Teas") === null) {
 	localStorage.setItem("Teas", JSON.stringify(teaTypes));	
@@ -255,6 +261,8 @@ if (localStorage.getItem("Teas") === null) {
 function UpdateTeaStore() {
 	localStorage.setItem("Teas", JSON.stringify(teaTypes));
 }
+
+// mute persist
 
 if (localStorage.getItem("muted") === null) {
 	muted = false;
@@ -273,6 +281,7 @@ function UpdateMuted() {
 	localStorage.setItem("muted", JSON.stringify(muted));
 }
 
+//	vibrate persist
 
 if (localStorage.getItem("vibrate") === null) {
 	vibrate = false;
@@ -291,6 +300,24 @@ function UpdateVibrate() {
 	localStorage.setItem("vibrate", JSON.stringify(vibrate));
 }
 
+// prevent-sleep persist
+
+if (localStorage.getItem("prevent_sleep") === null) {
+	prevent_sleep = false;
+	$('#prevent-sleep').attr("src", 'img/prevent-sleep-false.svg');
+	localStorage.setItem("prevent_sleep", JSON.stringify(prevent_sleep));	
+} else {
+	prevent_sleep = JSON.parse(localStorage.getItem("prevent_sleep"));
+};
+
+if (prevent_sleep) {
+	$('#prevent-sleep').attr("src", 'img/prevent-sleep-true.svg');
+}
+
+
+function UpdatePreventSleep() {
+	localStorage.setItem("prevent_sleep", JSON.stringify(prevent_sleep));
+}
 
 function GetSetting(setting, defaultValue) {
 	var value = localStorage.getItem(APP_NAME + setting);
@@ -675,6 +702,19 @@ $('#vibrate-button').on('click',function() {
 		$('#vibrate').attr("src", 'img/vibrate-true.svg');
 	}
 	UpdateVibrate();
+})
+
+$('#prevent-sleep-button').on('click',function() {
+	if (prevent_sleep) {
+		prevent_sleep = false;
+		$('#prevent-sleep').attr("src", 'img/prevent-sleep-false.svg');
+		noSleep.disable();
+	} else {
+		prevent_sleep = true;
+		$('#prevent-sleep').attr("src", 'img/prevent-sleep-true.svg');
+		PreventSleep();
+	}
+	UpdatePreventSleep();
 })
 
 setInterval(function(){
