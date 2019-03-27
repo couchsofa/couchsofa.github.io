@@ -236,8 +236,8 @@ function flashOnce(){
 }
 
 
-function vibrate(){
-	navigator.vibrate([100]);
+function vibrateFinal(){
+	navigator.vibrate([100, 500, 100, 500, 100, 500]);
 }
 
 function vibrateOnce(){
@@ -340,7 +340,7 @@ function TimerTick() {
 			beep2.play();
 		}
 		if (vibrate) {
-			vibrate();
+			vibrateFinal();
 		}
 		flash();
 		StopTimer();
