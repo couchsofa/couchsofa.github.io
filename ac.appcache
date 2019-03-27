@@ -13,6 +13,8 @@ audio/done.mp3
 
 img/mute-false.svg
 img/mute-true.svg
+img/vibrate-false.svg
+img/vibrate-true.svg
 
 img/android-chrome-192x192.png
 img/apple-touch-icon.png
@@ -22,5 +24,6 @@ img/favicon.ico
 favicon.ico
 img/mstile-150x150.png
 img/safari-pinned-tab.svg
+img/close.svg
 
 manifest.json

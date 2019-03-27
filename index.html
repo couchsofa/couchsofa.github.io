@@ -63,21 +63,31 @@
 	</div>
 
 	<div id="timerUI" class="card mt-3 text-center" hidden>
-		<div class="header card-header">
-			<div class="text-left">
-				<span aria-hidden="true">
+		<div class="btn-toolbar" role="toolbar">
+			<div class="btn-group w-100" role="group">
+
+				<button type="button" class="btn btn-secondary" id="mute-button">
 					<img id="mute" src="img/mute-false.svg" width="20" height="20" >
-				</span>
-				<button type="button" class="close">
-					<span aria-hidden="true">&times;</span>
 				</button>
+
+				<button type="button" class="btn btn-secondary" id="vibrate-button">
+					<img id="vibrate" src="img/vibrate-false.svg" width="20" height="20" >
+				</button>
+
+				<button type="button" class="btn btn-secondary" id="close">
+					<img src="img/close.svg" width="15" height="15" >
+				</button>	
 			</div>
+		</div>
+
+		<div class="header card-header">
 			<h3><p id="teaNameDiv"></p></h3>
 			<p>Infusion <span id="infusionNumSpan">1</span></p>
 			<div class="progress">
 				<div class="progress-bar" id="progressbar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
 			</div>
 		</div>
+
 		<span id="timeDisplay" class="display-1">15:00</span>
 		<p class="startButtonP"><button id="startButton" class="btn btn-success btn-lg" style="width: 75%; height: 5rem; margin: 1rem;">Start</button></p>
 		<p id="infusionSwitcherDiv">
@@ -107,6 +117,7 @@ const APP_NAME = 'GongfuTeaTimer';
 var lastTime;
 var timeLeft;
 var muted;
+var vibrate;
 var timerInterval = null;
 var alerted = false;
 var beep1 = new Audio('audio/beep.mp3');
@@ -225,6 +236,14 @@ function flashOnce(){
 }
 
 
+function vibrate(){
+	navigator.vibrate([1000, 500, 1000, 500, 1000, 500, 1000]);
+}
+
+function vibrateOnce(){
+	navigator.vibrate([1000]);
+}
+
 
 if (localStorage.getItem("Teas") === null) {
 	localStorage.setItem("Teas", JSON.stringify(teaTypes));	
@@ -253,6 +272,25 @@ if (muted) {
 function UpdateMuted() {
 	localStorage.setItem("muted", JSON.stringify(muted));
 }
+
+
+if (localStorage.getItem("vibrate") === null) {
+	vibrate = false;
+	$('#vibrate').attr("src", 'img/vibrate-false.svg');
+	localStorage.setItem("vibrate", JSON.stringify(vibrate));	
+} else {
+	vibrate = JSON.parse(localStorage.getItem("vibrate"));
+};
+
+if (vibrate) {
+	$('#vibrate').attr("src", 'img/vibrate-true.svg');
+}
+
+
+function UpdateVibrate() {
+	localStorage.setItem("vibrate", JSON.stringify(vibrate));
+}
+
 
 function GetSetting(setting, defaultValue) {
 	var value = localStorage.getItem(APP_NAME + setting);
@@ -292,11 +330,17 @@ function TimerTick() {
 		if (!muted) {
 			beep1.play();
 		}
+		if (vibrate) {
+			vibrateOnce();
+		}
 		flashOnce();
 		alerted = true;
 	} else if (timeLeft <= 0) {
 		if (!muted) {
 			beep2.play();
+		}
+		if (vibrate) {
+			vibrate();
 		}
 		flash();
 		StopTimer();
@@ -606,11 +650,11 @@ $('#addTea').on('click',function() {
 	SelectTea(tea, (length - 1));
 })
 
-$('.close').on('click',function() {
+$('#close').on('click',function() {
 	CloseSession(GetSetting('session', 0));
 })
 
-$('#mute').on('click',function() {
+$('#mute-button').on('click',function() {
 	if (muted) {
 		muted = false;
 		$('#mute').attr("src", 'img/mute-false.svg');
@@ -619,6 +663,17 @@ $('#mute').on('click',function() {
 		$('#mute').attr("src", 'img/mute-true.svg');
 	}
 	UpdateMuted();
+})
+
+$('#vibrate-button').on('click',function() {
+	if (vibrate) {
+		vibrate = false;
+		$('#vibrate').attr("src", 'img/vibrate-false.svg');
+	} else {
+		vibrate = true;
+		$('#vibrate').attr("src", 'img/vibrate-true.svg');
+	}
+	UpdateVibrate();
 })
 
 setInterval(function(){
