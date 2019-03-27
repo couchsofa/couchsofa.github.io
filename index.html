@@ -64,9 +64,14 @@
 
 	<div id="timerUI" class="card mt-3 text-center" hidden>
 		<div class="header card-header">
-			<button type="button" class="close">
-				<span aria-hidden="true">&times;</span>
-			</button>
+			<div class="text-left">
+				<span aria-hidden="true">
+					<img id="mute" src="img/mute-false.svg" width="20" height="20" >
+				</span>
+				<button type="button" class="close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
 			<h3><p id="teaNameDiv"></p></h3>
 			<p>Infusion <span id="infusionNumSpan">1</span></p>
 			<div class="progress">
@@ -101,6 +106,7 @@
 const APP_NAME = 'GongfuTeaTimer';
 var lastTime;
 var timeLeft;
+var muted;
 var timerInterval = null;
 var alerted = false;
 var beep1 = new Audio('audio/beep.mp3');
@@ -226,10 +232,27 @@ if (localStorage.getItem("Teas") === null) {
 	teaTypes = JSON.parse(localStorage.getItem("Teas"));
 };
 
+
 function UpdateTeaStore() {
 	localStorage.setItem("Teas", JSON.stringify(teaTypes));
 }
 
+if (localStorage.getItem("muted") === null) {
+	muted = false;
+	$('#mute').attr("src", 'img/mute-false.svg');
+	localStorage.setItem("muted", JSON.stringify(muted));	
+} else {
+	muted = JSON.parse(localStorage.getItem("muted"));
+};
+
+if (muted) {
+	$('#mute').attr("src", 'img/mute-true.svg');
+}
+
+
+function UpdateMuted() {
+	localStorage.setItem("muted", JSON.stringify(muted));
+}
 
 function GetSetting(setting, defaultValue) {
 	var value = localStorage.getItem(APP_NAME + setting);
@@ -266,11 +289,15 @@ function TimerTick() {
 	timeLeft = new Date(timeLeft - elapsed);
 	UpdateTimerDisplay();
 	if (alerted == false && timeLeft <= 5000) {
-		beep1.play();
+		if (!muted) {
+			beep1.play();
+		}
 		flashOnce();
 		alerted = true;
 	} else if (timeLeft <= 0) {
-		beep2.play();
+		if (!muted) {
+			beep2.play();
+		}
 		flash();
 		StopTimer();
 		NextInfusion();
@@ -581,6 +608,17 @@ $('#addTea').on('click',function() {
 
 $('.close').on('click',function() {
 	CloseSession(GetSetting('session', 0));
+})
+
+$('#mute').on('click',function() {
+	if (muted) {
+		muted = false;
+		$('#mute').attr("src", 'img/mute-false.svg');
+	} else {
+		muted = true;
+		$('#mute').attr("src", 'img/mute-true.svg');
+	}
+	UpdateMuted();
 })
 
 setInterval(function(){
