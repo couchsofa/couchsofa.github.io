@@ -1,12 +1,24 @@
 CACHE MANIFEST
 #1
 css/bootstrap.min.css
+
 js/bootstrap.min.js
 js/jquery-3.3.1.slim.min.js
 js/popper.min.js
 js/number-input.min.js
 js/NoSleep.min.js
+
 audio/beep.mp3
 audio/done.mp3
+
 img/mute-false.svg
 img/mute-true.svg
+
+img/android-chrome-192x192.png
+img/apple-touch-icon.png
+img/favicon-16x16.png
+img/favicon-32x32.png
+img/favicon.ico
+favicon.ico
+img/mstile-150x150.png
+img/safari-pinned-tab.svg
