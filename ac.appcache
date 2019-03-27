@@ -8,3 +8,5 @@ js/number-input.min.js
 js/NoSleep.min.js
 audio/beep.mp3
 audio/done.mp3
+img/mute-false.svg
+img/mute-true.svg
