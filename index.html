@@ -237,11 +237,11 @@ function flashOnce(){
 
 
 function vibrate(){
-	navigator.vibrate([1000, 500, 1000, 500, 1000, 500, 1000]);
+	navigator.vibrate([100]);
 }
 
 function vibrateOnce(){
-	navigator.vibrate([1000]);
+	navigator.vibrate([100]);
 }
 
 
@@ -651,6 +651,7 @@ $('#addTea').on('click',function() {
 })
 
 $('#close').on('click',function() {
+	StopTimer();
 	CloseSession(GetSetting('session', 0));
 })
 
