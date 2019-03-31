@@ -344,7 +344,9 @@ function StopTimer() {
 	timerInterval = null;
 	sessionSwitcherDiv.hidden = false;
 	infusionSwitcherDiv.hidden = false;
-	noSleep.disable();
+	if (!prevent_sleep) {
+		noSleep.disable();
+	}
 }
 
 function TimerTick() {
